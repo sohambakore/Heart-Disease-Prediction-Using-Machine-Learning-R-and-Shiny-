@@ -1,4 +1,13 @@
 # Classification template
+accuracy <- function(){
+  # Making the Confusion Matrix
+  cm = table(test_set[, 14], y_pred)
+  #accuracy <- sum(diag(cm))/sum(cm)
+  accr =  (sum(diag(cm))/sum(cm))
+  return(accr*100)
+}
+
+
 svm1 <- function(){
   
 #importing the libraries
@@ -104,10 +113,3 @@ return(cm)
 }
 
 
-accuracy <- function(){
-  # Making the Confusion Matrix
-  cm = table(test_set[, 14], y_pred)
-  #accuracy <- sum(diag(cm))/sum(cm)
-  accr =  (sum(diag(cm))/sum(cm))
-  return(accr*100)
-}
