@@ -1,97 +1,67 @@
-# Classification template
-
-#importing the libraries
-library(naivebayes)
-library(e1071)
-library(caTools)
-library(caret)
-
-
-# Importing the dataset
 dataset = read.csv('data.csv')
-#data_set = data.frame(dataset)
+
+# Taking care of missing data
+# 
+# dataset$slope.of.peak.exercise = ifelse(is.na(dataset$slope.of.peak.exercise),
+#                      ave(dataset$slope.of.peak.exercise, FUN = function(x) mean(x, na.rm = TRUE)),
+#                      dataset$slope.of.peak.exercise)
+#  dataset$thal = ifelse(is.na(dataset$thal),
+#                         ave(dataset$thal, FUN = function(x) mean(x, na.rm = TRUE)),
+#                         dataset$thal)
+ #dataset$ca = ifelse(is.na(dataset$ca),
+  #                     ave(dataset$ca, FUN = function(x) mean(x, na.rm = TRUE)),
+   #                    dataset$ca)
+
+# Encoding categorical data
+dataset$Sex = factor(dataset$Sex,
+                         levels = c('1', '0'),
+                         labels = c(1, 0))
+dataset$num = factor(dataset$num,
+                           levels = c('0', '1','2','3','4'),
+                           labels = c(0, 1, 2, 3, 4))
+dataset$chesp.pain.type = factor(dataset$chesp.pain.type,
+                           levels = c('1','2','3','4'),
+                           labels = c(1, 2, 3, 4))
+dataset$fasting.blood.sugar = factor(dataset$fasting.blood.sugar,
+                           levels = c('0', '1'),
+                           labels = c(0, 1))
+dataset$exercise.induced.angina = factor(dataset$exercise.induced.angina,
+                           levels = c('0', '1'),
+                         labels = c(0, 1))
+dataset$electrocardiographic = factor(dataset$electrocardiographic,
+                                         levels = c('0', '1','2'),
+                                         labels = c(0, 1,2))
+dataset$slope.of.peak.exercise = factor(dataset$slope.of.peak.exercise,
+                                      levels = c('1','2','3'),
+                                      labels = c(1,2,3))
+dataset$thal = factor(dataset$electrocardiographic,
+                                      levels = c('0','1','2'),
+                                      labels = c(0,1,2))
 
 
-#Missing data correction
-#dataset$thal <- as.numeric(as.character(dataset$thal))
-#dataset$ca <- as.numeric(as.character(dataset$ca))
-# na_vector <- which(!complete.cases(data_set))
-# no_na_dataset <- dataset[-na_vector,]
-# no_na_dataset <-  no_na_dataset[-88,]
-# no_na_dataset <- no_na_dataset[-167,]
-# no_na_dataset <-  no_na_dataset[-193,]
-# no_na_dataset <-  no_na_dataset[-303,]
-# no_na_dataset <-  no_na_dataset[-267,]
-# no_na_dataset <-  no_na_dataset[-288,]
-
-# na_omit <- na.omit(no_na_dataset)
-# na_remove <- remove_missing(dataset)
-
-
-# Encoding the target feature as factor
-dataset$num = factor(dataset$num, levels = c(0,1,2,3,4))
-dataset$Sex = factor(dataset$Sex, levels = c(0,1))
-dataset$chesp.pain.type = factor(dataset$chesp.pain.type, levels = c(1,2,3,4))
-dataset$fasting.blood.sugar = factor(dataset$fasting.blood.sugar, levels = c(0,1))
-dataset$electrocardiographic = factor(dataset$electrocardiographic, levels = c(0,1,2))
-dataset$exercise.induced.angina = factor(dataset$exercise.induced.angina, levels = c(0,1))
-dataset$slope.of.peak.exercise = factor(dataset$slope.of.peak.exercise, levels = c(1,2,3))
-dataset$ca = factor(dataset$ca, levels = c( 0,1,2,3))
-dataset$thal = as.numeric(dataset$thal)
-
-
-# Splitting the dataset into the Training set and Test set
-# install.packages('caTools')
+#Splitting the dataset into training and test set
+#install.packages('caTools')
 library(caTools)
-set.seed(123)
-split = sample.split(dataset$num, SplitRatio = 0.70)
+set.seed(1200000) 
+split = sample.split(dataset$num, SplitRatio = 0.63)
 training_set = subset(dataset, split == TRUE)
 test_set = subset(dataset, split == FALSE)
 
-# Feature Scaling
-training_set[-14] = scale(training_set[-14])
-test_set[-14] = scale(test_set[-14])
 
-# Fitting classifier to the Training set
-# Create your classifier here
+#Feature scaling
+training_set[,c(1,4,5,8,10,12)] = scale(training_set[,c(1,4,5,8,10,12)])
+test_set[,c(1,4,5,8,10,12)] = scale(test_set[,c(1,4,5,8,10,12)])
 
-#install.packages("rpart")
+
+# Fitting Decision Tree Classification to the Training set
+# install.packages('rpart')
 library(rpart)
-classifier = rpart(formula = num ~.,data = training_set)
+classifier = rpart(formula = num ~ ., control= rpart.control(minsplit = 20, cp = 0.01, maxdepth= 30),
+                   data = training_set)
 
 # Predicting the Test set results
 y_pred = predict(classifier, newdata = test_set[-14], type = 'class')
+#C50_model<-C5.0(training_set[,-14],training_set[,-14],trials= 10)
 
 # Making the Confusion Matrix
 cm = table(test_set[, 14], y_pred)
-# 
-# # Visualising the Training set results
-# library(ElemStatLearn)
-# set = training_set
-# X1 = seq(min(set[, 1]) - 1, max(set[, 1]) + 1, by = 0.01)
-# X2 = seq(min(set[, 2]) - 1, max(set[, 2]) + 1, by = 0.01)
-# grid_set = expand.grid(X1, X2)
-# colnames(grid_set) = c('Age', 'EstimatedSalary')
-# y_grid = predict(classifier, newdata = grid_set)
-# plot(set[, -3],
-#      main = 'Decison Tree (Training set)',
-#      xlab = 'Age', ylab = 'Estimated Salary',
-#      xlim = range(X1), ylim = range(X2))
-# contour(X1, X2, matrix(as.numeric(y_grid), length(X1), length(X2)), add = TRUE)
-# points(grid_set, pch = '.', col = ifelse(y_grid == 1, 'springgreen3', 'tomato'))
-# points(set, pch = 21, bg = ifelse(set[, 3] == 1, 'green4', 'red3'))
-# 
-# # Visualising the Test set results
-# library(ElemStatLearn)
-# set = test_set
-# X1 = seq(min(set[, 1]) - 1, max(set[, 1]) + 1, by = 0.01)
-# X2 = seq(min(set[, 2]) - 1, max(set[, 2]) + 1, by = 0.01)
-# grid_set = expand.grid(X1, X2)
-# colnames(grid_set) = c('Age', 'EstimatedSalary')
-# y_grid = predict(classifier, newdata = grid_set)
-# plot(set[, -3], main = 'Classifier (Test set)',
-#      xlab = 'Age', ylab = 'Estimated Salary',
-#      xlim = range(X1), ylim = range(X2))
-# contour(X1, X2, matrix(as.numeric(y_grid), length(X1), length(X2)), add = TRUE)
-# points(grid_set, pch = '.', col = ifelse(y_grid == 1, 'springgreen3', 'tomato'))
-# points(set, pch = 21, bg = ifelse(set[, 3] == 1, 'green4', 'red3'))
