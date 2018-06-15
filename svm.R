@@ -1,20 +1,16 @@
-# Classification template
-accuracy <- function(){
-  # Making the Confusion Matrix
-  cm = table(test_set[, 14], y_pred)
-  #accuracy <- sum(diag(cm))/sum(cm)
-  accr =  (sum(diag(cm))/sum(cm))
-  return(accr*100)
-}
+
+
+#importing the libraries
 
 
 svm1 <- function(){
   
 #importing the libraries
-library(naivebayes)
+#(naivebayes)
 library(e1071)
 library(caTools)
-library(caret)
+#library(caret)
+#library(svm)
 
 
 # Importing the dataset
@@ -113,3 +109,10 @@ return(cm)
 }
 
 
+accuracy <- function(){
+  # Making the Confusion Matrix
+  cm = table(test_set[, 14], y_pred)
+  #accuracy <- sum(diag(cm))/sum(cm)
+  accr =  (sum(diag(cm))/sum(cm))
+  return(accr*100)
+}
